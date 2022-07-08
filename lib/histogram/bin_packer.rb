@@ -21,7 +21,13 @@ class BinPacker
       Bin.new(f..range_max, 0)
     end
     binmax = groups.last.range.max
-    groups << Bin.new(binmax..(binmax + bin_width), 0) unless binmax >= max
+    unless binmax >= max
+      groups << if bin_width == 1
+        Bin.new(max..max, 0)
+      else
+        Bin.new(binmax..(binmax + bin_width), 0)
+      end
+    end
 
     values.each do |v|
       bin = groups.detect { |bin| bin.range.include?(v) }
@@ -35,7 +41,7 @@ class BinPacker
     if max.is_a?(Float) || min.is_a?(Float)
       (max - min) / bin_count.to_f
     else
-      [((max - min) / bin_count.to_f).ceil, 2].max
+      ((max - min) / bin_count.to_f).ceil
     end
   end
 end

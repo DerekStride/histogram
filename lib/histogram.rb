@@ -2,6 +2,7 @@
 
 require "histogram/bin"
 require "histogram/bin_packer"
+require "histogram/bin_counter"
 require "terminal-table"
 
 class Histogram
@@ -11,7 +12,7 @@ class Histogram
 
   def initialize(values)
     @values = values
-    @bin_count = [Math.sqrt(values.size).ceil, 7].min
+    @bin_count = BinCounter.evaluate(values)
     @bin_packer = BinPacker.new(@bin_count, values.min, values.max)
   end
 
@@ -48,8 +49,16 @@ class Histogram
     border.data[:ai] = border.data[:ax]
     border.data[:s] = border.data[:sx]
 
+    headings = bins.map do |bin|
+      min, max = bin.range.minmax
+      if min == max
+        min.to_s
+      else
+        "#{min.round(precision)}-#{max.round(precision)}"
+      end
+    end
     options = {
-      headings: bins.map { |bin| "#{bin.range.min.round(precision)}-#{bin.range.max.round(precision)}" },
+      headings: headings,
       rows: rows,
       style: {
         border: border,
