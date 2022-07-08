@@ -3,7 +3,11 @@
 require "test_helper"
 
 class HistogramTest < Minitest::Test
-  def test_version
-    refute_nil(Histogram::VERSION)
+  def setup
+    @histogram = Histogram.new(1..100)
+  end
+
+  def test_render
+    refute_nil(@histogram.render(title: "example title"))
   end
 end
