@@ -7,9 +7,9 @@ require "histogram"
 require "optparse"
 require "logger"
 
-$stdout.sync = true
+$stderr.sync = true
 # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
-$log = Logger.new($stdout, level: Logger::INFO)
+$log = Logger.new($stderr, level: Logger::INFO)
 
 DISTRIBUTIONS = ["uniform", "normal", "front", "back"]
 BORDERS = ["unicode", "ascii", "thick"]
@@ -85,8 +85,7 @@ end
 
 def main
   @histogram = Histogram.new(values)
-  $log << @histogram.render(**$options.slice(:title, :precision, :border))
-  $log << "\n"
+  puts @histogram.render(**$options.slice(:title, :precision, :border))
 end
 
 $log.debug("Options parsed: #{$options}")
