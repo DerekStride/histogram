@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "pry-byebug"
+require "histogram"
+require "optparse"
+require "logger"
+
+$stdout.sync = true
+# DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
+$log = Logger.new($stdout, level: Logger::INFO)
+
+DISTRIBUTIONS = ["uniform", "normal", "front", "back"]
+BORDERS = ["unicode", "ascii", "thick"]
+
+$options = {
+  count: 100,
+  distribution: DISTRIBUTIONS.first,
+
+  border: Terminal::Table::UnicodeBorder.new,
+}
+
+def list_help_text(alt, list)
+  "#{alt} Available options are: #{list.join(", ")}."
+end
+
+OptionParser.new do |o|
+  o.banner = "Usage: bin/test [options]"
+  o.on("-h", "--help") { puts(o); exit(0) }
+  o.on("-v", "--verbose") { $log.level -= 1 unless $log.debug? }
+  o.on("-c COUNT", "--count COUNT", Integer)
+  o.on(
+    "-d DISTRIBUTION",
+    "--distribution DISTRIBUTION",
+    DISTRIBUTIONS,
+    list_help_text(
+      "use DISTRIBUTION instead of `#{$options[:distribution]}` for generating values.",
+      DISTRIBUTIONS,
+    ),
+  )
+
+  o.on("-p PRECISION", "--precision PRECISION", Integer)
+  o.on("-t TITLE", "--title TITLE")
+  o.on(
+    "-b BORDER",
+    "--border BORDER",
+    BORDERS,
+    list_help_text(
+      "use BORDER instead of `#{BORDERS.first}` for rendering the histogram.",
+      BORDERS,
+    ),
+  ) do |border|
+    $options[:border] =
+      case border
+      when "ascii"
+        Terminal::Table::AsciiBorder.new
+      when "unicode"
+        Terminal::Table::UnicodeBorder.new
+      when "thick"
+        Terminal::Table::UnicodeThickEdgeBorder.new
+      end
+  end
+end.parse!(into: $options)
+
+def timestamp
+  Process.clock_gettime(Process::CLOCK_MONOTONIC, :microsecond)
+end
+
+def values
+  max = $options[:precision] ? 1.0 : 100
+  case $options[:distribution]
+  when "uniform"
+    values = $options[:count].times.map { Random.rand(max) }
+  when "normal"
+    values = $options[:count].times.map { Random.rand(max) }.select { |x|
+      ((((max / 2) - x).abs) * 2) < Random.rand(max)
+    }
+  when "front"
+    values = $options[:count].times.map { Random.rand(max) }.select { |x| x < Random.rand(max) }
+  when "back"
+    values = $options[:count].times.map { Random.rand(max) }.select { |x| x > Random.rand(max) }
+  end
+end
+
+def main
+  @histogram = Histogram.new(values)
+  $log << @histogram.render(**$options.slice(:title, :precision, :border))
+  $log << "\n"
+end
+
+$log.debug("Options parsed: #{$options}")
+
+start = timestamp
+main
+finished = timestamp
+
+$log.info("Finished in: #{timestamp - start}us")
