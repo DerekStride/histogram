@@ -3,7 +3,7 @@
 require_relative "lib/histogram/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "histogram"
+  spec.name = "histogram-rb"
   spec.version = Histogram::VERSION
   spec.authors = ["derekstride"]
   spec.email = ["derek@stride.host"]
