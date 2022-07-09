@@ -1,4 +1,5 @@
 # Histogram
+[![Ruby CI](https://github.com/DerekStride/histogram/actions/workflows/ruby.yml/badge.svg)](https://github.com/DerekStride/histogram/actions/workflows/ruby.yml) [![Publish new releases to rubygems](https://github.com/DerekStride/histogram/actions/workflows/publish-gem.yml/badge.svg)](https://github.com/DerekStride/histogram/actions/workflows/publish-gem.yml)
 
 Easily create a histogram from an array of values and allow easy rendering to the terminal.
 
